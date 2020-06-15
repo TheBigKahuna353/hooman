@@ -473,6 +473,25 @@ class TextBox:
         obj = self.font.render(" ", True, (0, 0, 0))
         return obj.get_height()
 
+    def wrapper(self, change_cur = False):
+        for cur_line, line in enumerate(self.text):
+            for i in range(len(''.join(line))):
+                length = self._get_text_width(''.join(line[:i]))
+                if length > self.w:
+                    indexs = [i for i, e in enumerate(self.text[cur_line][:i]) if e == " "]
+                    if cur_line < self.lines - 1:
+                        if len(indexs) == 0:
+                            indexs.append(i-1)
+                        if change_cur:
+                            self.current_line += 1
+                            self.current_col = len(self.text[cur_line]) - indexs[-1] - 1
+                        if cur_line < len(self.text):
+                            self.text.append(self.text[cur_line][indexs[-1]+1:])
+                        else:
+                            self.text[cur_line + 1] = self.text[cur_line][indexs[-1]+1:] + self.text[cur_line]
+                        self.text[cur_line] = self.text[cur_line][:indexs[-1]]
+                        break    
+
     # call this when the user presses a key down, supply the event from `pygame.event.get()`
     def key_down(self, e):
         # when backspace is pressed, delete last char
