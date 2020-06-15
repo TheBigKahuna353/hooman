@@ -69,6 +69,7 @@ def linechart(hapi, x, y, w, h, params):
         "line_color": (200, 200, 200),
         "text_color": (100, 100, 100),
         "mouse_line": False,
+        "graph_color": (0, 0, 0)
     }
     options.update(params)
     hapi.stroke_size(2)
@@ -104,24 +105,15 @@ def linechart(hapi, x, y, w, h, params):
         x_val += (options["range_x"][1] - options["range_x"][0]) // options["ticks_x"]
 
     for i, d in enumerate(options["data"]):
-        hapi.stroke_size(2)
-        hapi.stroke(options["line_color"])
+        
         try:
-            # x1 = hapi.constrain(d[0], options['range_x'][0], options['range_x'][1], 0, w)
-            # y1 = hapi.constrain(d[1], options['range_y'][0], options['range_y'][1], 0, h)
-            # x2 = hapi.constrain(options['data'][i+1][0], options['range_x'][0], options['range_x'][1], 0, w)
-            # y2 = hapi.constrain(options['data'][i+1][1], options['range_y'][0], options['range_y'][1], 0, h)
-            # hapi.line(x1, x2, y1, y2)
             x1 = hapi.constrain(
                 d[0], options["range_x"][0], options["range_x"][1], x, x + w
             )
-            y1 = (
-                60
-                + h
-                - hapi.constrain(
+            y1 = y + h -hapi.constrain(
                     d[1], options["range_y"][0], options["range_y"][1], y, y + h
-                )
-            )
+                ) + y
+           
             x2 = hapi.constrain(
                 options["data"][i + 1][0],
                 options["range_x"][0],
@@ -129,20 +121,19 @@ def linechart(hapi, x, y, w, h, params):
                 x,
                 x + w,
             )
-            y2 = (
-                60
-                + h
-                - hapi.constrain(
+            y2 = y + h -hapi.constrain(
                     options["data"][i + 1][1],
                     options["range_y"][0],
                     options["range_y"][1],
                     y,
                     y + h,
-                )
-            )
+                ) + y
+           
             # 60 is arbitrary value
             # hapi.fill(hapi.color['yellow'])
             # print(x1, y1)
+            hapi.stroke_size(2)
+            hapi.stroke(options["graph_color"])
             hapi.line(x1, y1, x2, y2)
             # hapi.line(x1, y1, x2, y2)
         except IndexError:
@@ -164,5 +155,20 @@ def linechart(hapi, x, y, w, h, params):
 
         hapi.line(x, limit_y, x + w, limit_y)
         hapi.line(limit_x, y, limit_x, y + h)
-        tex = "{} {}".format(limit_x, limit_y)
-        hapi.text(tex, 100, 100)
+        #tex = "{} {}".format(limit_x, limit_y)
+        #hapi.text(tex, 100, 100)
+
+def piechart(hapi, x, y, radius, data, start_rad=0):
+    first_run = True
+    total = 0
+    if first_run:
+        for d in data:
+            total += d[1]
+        first_run = False
+
+    previous_a = 0
+    for i,d in enumerate(data):
+        hapi.fill(d[2])
+        end_a = previous_a + (d[1]/total)*360
+        hapi.fill_arc(x, y, radius, previous_a, end_a, start_rad=start_rad)
+        previous_a = end_a
